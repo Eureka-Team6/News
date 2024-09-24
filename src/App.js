@@ -1,9 +1,13 @@
-import NewsApi from './components/NewsApi';
+import Content from './components/Content';
+import Footer from './components/Footer';
+import Nav from './components/Nav';
 
 function App() {
   return (
-    <div className="App">
-      <NewsApi />
+    <div className="flex flex-col min-h-screen">
+      <Nav />
+      <Content />
+      <Footer />
     </div>
   );
 }
