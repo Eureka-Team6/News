@@ -1,20 +1,33 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import images from '../utils/importAll';
 import { Dialog, DialogPanel } from '@headlessui/react'
 import TopUs from './TopUs';
 import TopKr from './TopKr';
 
 const navigation = [
-  { name: '사회', text: 'general' },
-  { name: '경제', text: 'business'},
-  { name: '생활/문화', text: 'entertainment'},
-  { name: '기술', text: 'technology'}
-]
+  { name: '사회', us: 'general', kr: ['politics','society'] },
+  { name: '경제', us: 'business', kr: 'economy' },
+  { name: '생활/문화', us: 'entertainment', kr: 'entertainment' },
+  { name: '기술', us: 'technology', kr: 'tech' }
+];
 
 export default function Nav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [item, setItem] = useState('해외');
-  const [category, setCategory] = useState('general');
+  const [item, setItem] = useState(() => {
+    return localStorage.getItem('item') || '해외';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('item', item);
+  }, [item]);
+
+  const toggleItem = () => {
+    setItem((prevItem) => (prevItem === '국내' ? '해외' : '국내'));
+  };
+
+  const [category, setCategory] = useState(navigation[0].us);
+
+  const currentCategory = navigation.find(nav => nav.us === category || nav.kr.includes(category));
 
   const handleClick = (category) => {
     setCategory(category);
@@ -31,7 +44,7 @@ export default function Nav() {
             {/*토글 동그라미에 가려지는 글자와 동적 효과*/}
             <div 
               className='w-[90px] h-[36px] bg-indigo-900 px-2 rounded-full relative flex items-center overflow-hidden ease-in-out duration-200 cursor-pointer'
-              onClick={() => setItem(item === '국내' ? '해외' : '국내')}
+              onClick={toggleItem}
             >
               <div 
                 className={`absolute top-1 left-1 w-7 h-7 bg-white rounded-full transition-transform duration-500 ease-in-out z-10 ${item === '해외' ? 'translate-x-[55px]' : ''}`}
@@ -55,7 +68,7 @@ export default function Nav() {
           </div>
           <div className="flex-1 justify-center hidden lg:flex gap-x-20">
             {navigation.map((item) => (
-              <button key={item.name} onClick={() => handleClick(item.text)} className="text-base fontBold leading-6 text-gray-900 hover:text-indigo-800 transition-all duration-300">
+              <button key={item.name} onClick={() => handleClick(item.us)} className="text-base fontBold leading-6 text-gray-900 hover:text-indigo-800 transition-all duration-300">
                 {item.name}
               </button>
             ))}
@@ -93,7 +106,7 @@ export default function Nav() {
                   {navigation.map((item) => (
                     <button
                       key={item.name}
-                      onClick={() => handleClick(item.text)}
+                      onClick={() => handleClick(item.us)}
                       className="-mx-3 block rounded-lg px-3 py-2 w-full text-left text-base fontBold leading-7 text-gray-900 hover:bg-indigo-900 hover:text-white"
                     >
                       {item.name}
@@ -112,7 +125,7 @@ export default function Nav() {
       </header>
       {/* item : 동그라미에 가려지는 글자 */}
       <div className='mb-5'>
-        {item === "국내" ? <TopUs category={category} /> : <TopKr/>}
+        {item === "국내" ? <TopUs category={currentCategory.us} /> : <TopKr category={currentCategory.kr}/>}
       </div>
     </div>
 );

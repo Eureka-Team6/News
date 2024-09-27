@@ -1,35 +1,64 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import images from '../utils/importAll';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
-// news api kr 지원 X - naver news api 테스트 진행 중
-export default function TopKr() {
-    const [items, setItems] = useState([]);
+export default function TopKr(props) {
+    const [articles, setArticles] = useState([]);
+    const category = props.category;
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await axios.get('http://localhost:8080/news');
-                setItems(response.data.items);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
+        const fetchTopNews = async () => {
+            const response = await fetch(`http://localhost:8080/deep/top?category=${category}`);
+            const data = await response.json();
+            setArticles(data);
+        }
+        fetchTopNews();
+    }, [category]);
 
-        fetchData();
-    }, []);
+    var settings = {
+        dots: true,
+        infinite: false,
+        speed: 500,
+        slidesToShow: 2,
+        slidesToScroll: 2,
+        initialSlide: 0,
+        arrows: true,
+        responsive: [
+        {
+            breakpoint: 480,
+            settings: {
+            slidesToShow: 1,
+            slidesToScroll: 1,
+            arrows: true
+            }
+        }
+        ]
+    };
 
     return (
-        <div>
-            <h1>News Articles</h1>
-            {items.map(item => (
-                <div key={item.link}>
-                    <h2>{item.title}</h2>
-                    <p>{item.description}</p>
-                    <a href={item.link} target="_blank" rel="noopener noreferrer">{item.link}</a>
-                    <p><strong>Published at:</strong> {item.pubDate}</p>
-                    <hr />
-                </div>
-            ))}
+        <div className="max-w-7xl mx-auto">
+            <div className='slider-container'>
+                <Slider {...settings}>
+                {articles.map((article, index) => (
+                    <div key={index} className="flex justify-center">
+                    <div className="w-full">
+                        <img
+                        src={article.imageUrl ? article.imageUrl : images['technology.jpg']} 
+                        alt={article.title} 
+                        className="w-5/6 h-64 mx-auto object-cover"
+                        />
+                        <div className="w-5/6 mx-auto">
+                        <a href={article.contentUrl} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-900">
+                            {article.title}
+                        </a>
+                        </div>
+                    </div>
+                    </div>
+                ))}
+                </Slider>
+            </div>
         </div>
     );
 }
